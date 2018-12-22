@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%include ./partials/head %>
+</head>
+
+<body>
+    <header role="banner">
+        <%include ./partials/header %>
+    </header>
+
+    <main class="row display-window" role="content">
+        <section class="col-12" role="content">
+   
+
+            <h1>I'm Ready to Challenge Myself</h1>
+            <form action="/register" method="POST" id="register-form" role="form">
+                <div>
+                    <label for="firstname">First Name</label>
+                    <input type="text" id="firstname" name="firstName" placeholder="John" required>
+                </div>
+                <div>
+                    <label for="lastname">Last Name</label>
+                    <input type="text" id="lastname" name="lastName" placeholder="Smith" required>
+                </div>
+                <div>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" placeholder="john.smith@gmail.com" required>
+                </div>
+                <div>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="johnnybravo" required>
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="At least 8 characters">
+                </div>
+                <button type="submit" class="submit-button">Create New Account</button>   
+            </form>
+
+        </section>
+
+
+    </main>
+    <%include ./partials/scripts %>
+</body>
+
+</html>

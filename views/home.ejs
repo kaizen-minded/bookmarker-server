@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%include ./partials/head %>
+</head>
+
+<body>
+    <header role="banner">
+        <%include ./partials/header %>
+    </header>
+
+    <main class="row no-padding" role="main">
+        <section class="col-12 intro-window" role="content">
+            <div class="title-screen">
+                    <h1>Challenge Yourself</h1>
+                    <p>Difficulties strengthen the mind, as labor does the body, Seneca</p>
+                    <p>So go out there and... Challenge Yourself</p>
+                    <form method="GET" action="/register" role="form">
+                        <button class="submit-button">Sign Up -It's Free</button>
+                    </form>
+                    
+                    <p>Already Challenging Yourself? <a href="/login">Login.</a></p>
+            </div>
+
+        </section>
+        
+        
+
+    </main>
+
+    <%include ./partials/scripts %>
+</body>
+
+</html>

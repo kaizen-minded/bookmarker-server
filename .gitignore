@@ -1,0 +1,5 @@
+node_modules
+.vscode
+basic webpage
+.env
+.travis.yml

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%include ./partials/head %>
+</head>
+
+<body>
+    <header role="banner">
+        <%include ./partials/header %>
+    </header>
+
+    <main class="row display-window" role="main">
+        <section class="col-12" role="content">
+   
+
+            <h1>Login to Challenge Yourself</h1>
+            <form action="/auth/login" method="POST" id="login-form" role="form">
+                <div>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" placeholder="johnnybravo">
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="*************">
+                </div>
+                <p id="feedback" aria-live="assertive"></p>
+                <button type="submit"  class="submit-button">Login</button>   
+            </form>
+
+        </section>
+
+    </main>
+    <%include ./partials/scripts %>
+</body>
+
+</html>
