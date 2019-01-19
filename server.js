@@ -7,7 +7,7 @@ const passport = require('passport');
 const authRoutes = require('./auth/router');
 const { localStrategy } = require('./auth/strategies');
 
-const challengesRoutes = require('./routes/challengesRouter');
+const bookRoutes = require('./routes/bookRouter');
 const userRoutes = require('./routes/userRouter');
 
 const { User } = require("./models/user");
@@ -42,7 +42,7 @@ const localAuth = passport.authenticate('local', { session: true });
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/', userRoutes);
-app.use('/challenges', challengesRoutes);
+app.use('/book', bookRoutes);
 app.use('/auth', authRoutes);
 app.use(function (err, req, res, next) {
     console.log(err);

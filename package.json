@@ -4,7 +4,8 @@
   "description": "Simple Todo app",
   "main": "server.js",
   "scripts": {
-    "test": "mocha --timeout 20000"
+    "test": "mocha --timeout 20000",
+    "start": "nodemon server.js"
   },
   "author": "",
   "license": "ISC",
@@ -20,6 +21,7 @@
     "jsonwebtoken": "^8.3.0",
     "mongoose": "^5.2.10",
     "morgan": "^1.9.1",
+    "node-fetch": "^2.3.0",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
