@@ -2,8 +2,8 @@ language: node_js
 node_js: node
 services: mongodb
 env:
--  CI=true
--  JWT_SECRET=Aliveman
+  - CI=true
+  - JWT_SECRET=Aliveman
 deploy:
   provider: heroku
   app: bookmarker-server1
