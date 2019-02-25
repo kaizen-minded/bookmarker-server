@@ -4,49 +4,23 @@ const bodyParser = require("body-parser");
 const mongoose = require('mongoose');
 const passport = require('passport');
 
-const authRoutes = require('./auth/router');
-const { localStrategy } = require('./auth/strategies');
-
-const bookRoutes = require('./routes/bookRouter');
 const userRoutes = require('./routes/userRouter');
+const authRoutes = require('./auth/router');
+const { localStrategy, JwtStrategy } = require('./auth/strategies');
+const bookRoutes = require('./routes/bookRouter');
 
 const { User } = require("./models/user");
+
 const { DATABASE_URL, PORT } = require('./config');
 
+mongoose.Promise = global.Promise;
 
 const app = express();
 const jsonParser = bodyParser.json();
-mongoose.Promise = global.Promise;
-
-app.use(require('morgan')('combined'));
-app.use(require('cookie-parser')());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(require('express-session')({ secret: 'keyboard cat', resave: false, saveUninitialized: false }));
-
-app.use(jsonParser);
-app.use(express.static("public"));
-
-passport.use(localStrategy);
-passport.serializeUser(function (user, cb) {
-    cb(null, user._id);
-});
-
-passport.deserializeUser(function (id, cb) {
-    User.findById(id, function (err, user) {
-        if (err) { return cb(err); }
-        cb(null, user);
-    });
-});
-const localAuth = passport.authenticate('local', { session: true });
 
 app.use(passport.initialize());
-app.use(passport.session());
-app.use('/', userRoutes);
-app.use('/book', bookRoutes);
-app.use('/auth', authRoutes);
-app.use(function (err, req, res, next) {
-    console.log(err);
-})
+app.use(require('morgan')('combined'));
+app.use(jsonParser);
 
 app.use(function (req,res,next) {
     res.header('Access-Control-Allow-Origin','*');
@@ -58,7 +32,20 @@ app.use(function (req,res,next) {
     next();
   });
 
-  app.use('*',(req,res) => {
+passport.use(localStrategy);
+passport.use(JwtStrategy);
+
+
+const jwtAuth = passport.authenticate('jwt', { session: false })
+
+app.use('/', userRoutes);
+app.use('/auth', authRoutes);
+app.use('/book', jwtAuth,  bookRoutes);
+
+
+
+
+app.use('*',(req,res) => {
     return res.status(404).json({ message: 'Not Found.' });
   });
 

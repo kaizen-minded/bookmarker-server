@@ -11,7 +11,7 @@ const { Book } = require("../models/book");
 router.get('/', (req, res) => {
     const status = req.query.status
     // find by userId then status { user: req.user._id }
-    Book.find({status: status})
+    Book.find({status: status, userId: req.user.id})
         .then(data => {
             res.json(data)
         })
@@ -22,7 +22,7 @@ router.get('/', (req, res) => {
 
 router.get('/allbooks', (req, res) => {
     // find by userId then status { user: req.user._id }
-    Book.find()
+    Book.find({ userId: req.user.id})
         .then(data => {
             res.json(data)
         })
@@ -34,7 +34,7 @@ router.get('/allbooks', (req, res) => {
 router.get('/:id', (req, res) => {
     const id = req.params.id
     // find by userId then status { user: req.user._id }
-    Book.findOne({bookId: id})
+    Book.findOne({bookId: id,  userId: req.user.id})
         .then(data => {
             res.json(data)
         })
@@ -68,6 +68,7 @@ router.get('/search/:id', (req,res) => {
 
 router.post('/create', (req, res) => {
     Book.create({
+        userId: req.user.id,
         title: req.body.title,
         author: req.body.author,
         bookId: req.body.bookId,
@@ -107,6 +108,57 @@ router.delete('/deletebook/:id', (req, res) =>{
             res.status(500).json({ message: "Internal Server Error" })
         })
 })
+
+router.post('/addcomment/:id', (req, res) => {
+    console.log("POST request completed")
+    Book.findOneAndUpdate({
+        userId: req.user.id,
+        bookId: req.params.id
+    },
+        {
+            $push: {
+                notes: {
+                    $each:[
+                        {
+                            currentPage: req.body.bookmarkPage,
+                            body: req.body.comment
+                        }],
+                    $position: 0
+                }
+            }
+        }, {new: true})
+        .then(result => {
+            res.status(200).json({commentInfo: result.notes[0]})
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: "Internal Server Error" })
+        })
+
+})
+router.delete('/deletecomment/:id', (req, res) => {
+    console.log("Delete Comment")
+    Book.findOneAndUpdate({
+        userId: req.user.id,
+        bookId: req.params.id
+    },
+        {
+            $pull: {
+                notes: {_id: req.body.commentId }
+            }
+        }, {new: true})
+        .then(result => {
+            console.log(result)
+            res.status(200).json({commentInfo: result})          
+        })
+        .catch(err => {
+            console.error(err);
+            res.status(500).json({ message: "Internal Server Error" })
+        })
+
+})
+
+
 // router.get('/:id', (req, res) => {
 //     Challenge.find({
 //         userId: req.user.id
@@ -211,29 +263,7 @@ router.get('/task/:id', (req, res) => {
 });
 
 
-router.post('/addtask/:id', (req, res) => {
-    Challenge.findOneAndUpdate({
-        userId: req.user.id,
-        _id: req.params.id
-    },
-        {
-            $push: {
-                tasks: {
-                    name: req.body.name,
-                    startDate: req.body.startDate,
-                    deadline: req.body.deadline
-                }
-            }
-        })
-        .then(challenge => {
-            res.redirect(`/challenges/task/${req.params.id}`)
-        })
-        .catch(err => {
-            console.error(err);
-            res.status(500).json({ message: "Internal Server Error" })
-        })
 
-})
 
 router.delete('/deletetask/:id', (req, res) => {
     let deletetask = req.params.id;

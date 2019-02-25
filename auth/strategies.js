@@ -1,12 +1,17 @@
 'user strict';
 const { Strategy: LocalStrategy } = require('passport-local');
+
+const { Strategy: JwtPassport, ExtractJwt } = require('passport-jwt');
+
 const { User } = require('../models/user');
+const { JWT_SECRET } = require('../config');
 
 
 const localStrategy = new LocalStrategy((username, password, callback) => {
     let user;
     User.findOne({ username: username })
         .then(_user => {
+            console.log(_user)
             user = _user;
             if (!user) {
                 return Promise.reject({
@@ -34,5 +39,15 @@ const localStrategy = new LocalStrategy((username, password, callback) => {
         });
 });
 
+const JwtStrategy = new JwtPassport(
+    {
+        secretOrKey: JWT_SECRET,
+        jwtFromRequest: ExtractJwt.fromAuthHeaderWithScheme('Bearer'),
+        algorithm: ['HS256']
+    },
+    (payload, done) => {
+        done(null, payload.user)
+    }
+)
 
-module.exports = { localStrategy };
+module.exports = { localStrategy, JwtStrategy };

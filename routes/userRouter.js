@@ -1,25 +1,26 @@
 const express = require('express');
+const passport = require('passport');
 const router = express.Router();
 const ejs = require('ejs');
 
 const { User } = require("../models/user")
 
-router.get('/', (req, res) => {
-    if(req.user){
-        res.redirect(`/challenges/${req.user.id}`)
-    }
-    ejs.renderFile('views/home.ejs', {loggedIn: false}, function(err, str){
-        res.send(str)
-    });
-    res.status(200);
-})
+// router.get('/', (req, res) => {
+//     if(req.user){
+//         res.redirect(`/challenges/${req.user.id}`)
+//     }
+//     ejs.renderFile('views/home.ejs', {loggedIn: false}, function(err, str){
+//         res.send(str)
+//     });
+//     res.status(200);
+// })
 
 
-router.get('/register', (req, res) => {
-    ejs.renderFile('views/register.ejs',{loggedIn: false}, function(err, str){
-        res.send(str)
-    })
-})
+// router.get('/register', (req, res) => {
+//     ejs.renderFile('views/register.ejs',{loggedIn: false}, function(err, str){
+//         res.send(str)
+//     })
+// })
 
 router.post('/register', (req, res) => {
     const requiredFields = ['username', 'password'];
@@ -127,16 +128,18 @@ router.post('/register', (req, res) => {
     
 })
 
-router.get('/login', (req, res) => {
-    ejs.renderFile('views/login.ejs', {loggedIn: false}, function(err, str){
-        res.send(str)
-    })
-    res.status(200);
-})
+const localAuth = passport.authenticate('local', {session: false})
 
-router.get('/logout', (req, res) => {
-    req.logout();
-    res.redirect('/');
-})
+// router.post('/login', localAuth, (req, res) => {
+//     console.log(req)
+//     res.json(req.user)
+    
+
+// })
+
+// router.get('/logout', (req, res) => {
+//     req.logout();
+//     res.redirect('/');
+// })
 
 module.exports = router; 
