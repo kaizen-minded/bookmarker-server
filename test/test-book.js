@@ -1,18 +1,22 @@
 'use strict';
-
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const faker = require('faker');
-const mongoose = require('mongoose');
 const request = require('supertest');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+
+const { app, runServer, closeServer } = require('../server');
+const { Book } = require('../models/book');
+const { User } = require('../models/user');
+const { JWT_SECRET } = require('../config');
+const { TEST_DATABASE_URL } = require('../config');
 
 const expect = chai.expect;
 
-const { Book } = require('../models/book');
-
-const { app, runServer, closeServer } = require('../server');
-const { TEST_DATABASE_URL } = require('../config');
-
+// This let's us make HTTP requests
+// in our tests.
+// see: https://github.com/chaijs/chai-http
 chai.use(chaiHttp);
 
 function generateUserData() {
@@ -20,51 +24,155 @@ function generateUserData() {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         username: faker.internet.userName(),
-        email: faker.internet.email(),
-        password: "password123"
-    }
-}
+        password: "password123",
+        email: faker.internet.email()
 
-describe("Book test server", function () {
+    }
+};
+function tearDownDb() {
+    console.warn('Deleting database');
+    return mongoose.connection.dropDatabase();
+};
+
+describe('Auth endpoints', function () {
+
+
     before(function () {
-        return runServer(TEST_DATABASE_URL)
+        return runServer(TEST_DATABASE_URL);
     });
+
     after(function () {
         return closeServer();
     });
 
-    it('should get an ok status', function() {
-        let res;
-        return request(app)
-            .get('/book')
-            .then(function (_res) {
-                res = _res;
-                expect(res).to.have.status(200)
-            })
-    })
-    it('should add a book to Book database', function(done){
-        const newBook = {
-            title: "Dune",
-            author: "Frank Herbert"
-        }
+    let newUser
+
+    beforeEach(function (done) {
+
+        newUser = generateUserData();
+        console.log(newUser)
         request(app)
-            .post('/book')
-            .type('form')
-            .send(newBook)
-            .expect(201)
-            .end(done)
-    })
-
-        describe("POST to register", function () {
-        it("should create a new User", function (done) {
-            const newUser = generateUserData();
-
-            request(app)
             .post('/register')
-            .type('form')
+            .set('Accept', 'application/json')
             .send(newUser)
             .expect(201)
-            .end(done)
-        })
-    })
-})
+            .then((res) => {
+                newUser.id = res.body.id;
+                return Book.create({
+                    userId: res.body.id,
+                    bookId: 2134,
+                    title: "Harry Potter"
+                })
+            })
+            .then((res) => {
+                // console.log("[FIND THE BOOK]", res)
+                done()
+            })
+    });
+
+    afterEach(function () {
+        return tearDownDb();
+    });
+    describe('/book', function () {
+        it('Should send protected data', function () {
+            const token = jwt.sign(
+                {
+                    user: {
+                        username: newUser.username,
+                        id: newUser.id,
+                        firstName: newUser.firstName,
+                        lastName: newUser.lastName
+                    }
+                },
+                JWT_SECRET,
+                {
+                    algorithm: 'HS256',
+                    subject: newUser.username,
+                    expiresIn: '7d'
+                }
+            );
+
+            return chai
+                .request(app)
+                .get('/book?status=wishlist')
+                .set('authorization', `Bearer ${token}`)
+                .then(res => {
+                    // console.log("FIND RES BODY", res.body);
+                    // console.log("[FIND NEWUSER]", newUser);
+                    expect(res).to.have.status(200);
+                    expect(res.body).to.be.an('array');
+                    expect(res.body[0]).to.be.an('object');
+                    //   expect(res.body.data).to.equal('rosebud');
+                });
+        });
+    });
+    it('Should add new book', function () {
+        const token = jwt.sign(
+            {
+                user: {
+                    username: newUser.username,
+                    id: newUser.id,
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName
+                }
+            },
+            JWT_SECRET,
+            {
+                algorithm: 'HS256',
+                subject: newUser.username,
+                expiresIn: '7d'
+            }
+        );
+
+        return chai
+            .request(app)
+            .post('/book/create')
+            .set('authorization', `Bearer ${token}`)
+            .send({userId: newUser.id, title: "Lord of the rings"})
+            .then(res => {
+                // console.log("[ADDBOOK] FIND RES BODY", res.body);
+                // console.log("[FIND NEWUSER]", newUser);
+                expect(res).to.have.status(201);
+                expect(res.body).to.be.an('object');
+                expect(res.body.title).to.equal("Lord of the rings");
+                expect(res.body.status).to.equal("wishlist");
+            });
+    });
+
+    it('Should delete book', function () {
+        const token = jwt.sign(
+            {
+                user: {
+                    username: newUser.username,
+                    id: newUser.id,
+                    firstName: newUser.firstName,
+                    lastName: newUser.lastName
+                }
+            },
+            JWT_SECRET,
+            {
+                algorithm: 'HS256',
+                subject: newUser.username,
+                expiresIn: '7d'
+            }
+        );
+        return chai
+            .request(app)
+            .post('/book/create')
+            .set('authorization', `Bearer ${token}`)
+            .send({userId: newUser.id, title: "Lord of the rings", bookId: 123887})
+            .then(res => {
+                return chai
+                    .request(app)
+                    .delete(`/book/deletebook/${res.body.bookId}`)
+                    .set('authorization', `Bearer ${token}`)
+                    .then(res => {
+                        console.log("[DELETE RES]", res.body)
+                        expect(res).to.have.status(201);
+                        expect(res.body).to.be.an('object');
+                        expect(res.body.title).to.equal("Lord of the rings");
+                        expect(res.body.status).to.equal("wishlist");
+                    });
+            });
+    }); 
+});
