@@ -1,4 +1,4 @@
-'user strict';
+'use strict';
 const { Strategy: LocalStrategy } = require('passport-local');
 
 const { Strategy: JwtPassport, ExtractJwt } = require('passport-jwt');
@@ -11,7 +11,6 @@ const localStrategy = new LocalStrategy((username, password, callback) => {
     let user;
     User.findOne({ username: username })
         .then(_user => {
-            console.log(_user)
             user = _user;
             if (!user) {
                 return Promise.reject({

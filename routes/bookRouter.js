@@ -2,15 +2,12 @@ const express = require('express');
 const router = express.Router();
 const fetch = require('node-fetch');
 const convert = require('xml-js');
-const mongoose = require('mongoose');
-const ejs = require('ejs');
 const API_KEY = require('../config').GOODREADS_API_KEY;
 
 const { Book } = require("../models/book");
 
 router.get('/', (req, res) => {
     const status = req.query.status
-    // find by userId then status { user: req.user._id }
     Book.find({status: status, userId: req.user.id})
         .then(data => {
             res.json(data)
@@ -21,7 +18,6 @@ router.get('/', (req, res) => {
 })
 
 router.get('/allbooks', (req, res) => {
-    // find by userId then status { user: req.user._id }
     Book.find({ userId: req.user.id})
         .then(data => {
             res.json(data)
@@ -33,7 +29,6 @@ router.get('/allbooks', (req, res) => {
 
 router.get('/:id', (req, res) => {
     const id = req.params.id
-    // find by userId then status { user: req.user._id }
     Book.findOne({bookId: id, userId: req.user.id})
         .then(data => {
             res.json(data)
@@ -48,7 +43,6 @@ router.get('/search/:id', (req,res) => {
         q: req.params.id,
         key: API_KEY
     }
-    console.log(req.params.id)
     fetch(`https://www.goodreads.com/search/index.xml?q=${query.q}&key=${query.key}`)
     .then(res => {
         if(!res.ok) {
@@ -85,9 +79,7 @@ router.post('/create', (req, res) => {
 })
 
 router.put('/updatebookstatus/:id', (req, res) => {
-    console.log(req.body)
     const id = {bookId: req.body.id, userId: req.user.id}
-    // Book.findByIdAndUpdate(id, {status: req.body.status})
     Book.findOneAndUpdate(id, {status: req.body.status}, {new: true})
     .then(book => {
         res.status(201).json({message: book});
@@ -99,8 +91,6 @@ router.put('/updatebookstatus/:id', (req, res) => {
 })
 
 router.delete('/deletebook/:id', (req, res) =>{
-    console.log("ROUTE DELETE ACTIVATED")
-    console.log(req.params.id)
     Book.findOneAndDelete({
         userId: req.user.id,
         bookId: req.params.id
@@ -113,7 +103,6 @@ router.delete('/deletebook/:id', (req, res) =>{
 })
 
 router.post('/addcomment/:id', (req, res) => {
-    console.log("POST request completed")
     Book.findOneAndUpdate({
         userId: req.user.id,
         bookId: req.params.id
@@ -140,7 +129,6 @@ router.post('/addcomment/:id', (req, res) => {
 
 })
 router.delete('/deletecomment/:id', (req, res) => {
-    console.log("Delete Comment")
     Book.findOneAndUpdate({
         userId: req.user.id,
         bookId: req.params.id
@@ -151,16 +139,12 @@ router.delete('/deletecomment/:id', (req, res) => {
             }
         }, {new: true})
         .then(result => {
-            console.log(result)
             res.status(200).json({commentInfo: result})          
         })
         .catch(err => {
             console.error(err);
             res.status(500).json({ message: "Internal Server Error" })
         })
-
 })
-
-
 
 module.exports = router;

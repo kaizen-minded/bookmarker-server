@@ -50,7 +50,6 @@ describe('Auth endpoints', function () {
     beforeEach(function (done) {
 
         newUser = generateUserData();
-        console.log(newUser)
         request(app)
             .post('/register')
             .set('Accept', 'application/json')
@@ -65,7 +64,6 @@ describe('Auth endpoints', function () {
                 })
             })
             .then((res) => {
-                // console.log("[FIND THE BOOK]", res)
                 done()
             })
     });
@@ -97,12 +95,9 @@ describe('Auth endpoints', function () {
                 .get('/book?status=wishlist')
                 .set('authorization', `Bearer ${token}`)
                 .then(res => {
-                    // console.log("FIND RES BODY", res.body);
-                    // console.log("[FIND NEWUSER]", newUser);
                     expect(res).to.have.status(200);
                     expect(res.body).to.be.an('array');
                     expect(res.body[0]).to.be.an('object');
-                    //   expect(res.body.data).to.equal('rosebud');
                 });
         });
     });
@@ -130,8 +125,6 @@ describe('Auth endpoints', function () {
             .set('authorization', `Bearer ${token}`)
             .send({userId: newUser.id, title: "Lord of the rings"})
             .then(res => {
-                // console.log("[ADDBOOK] FIND RES BODY", res.body);
-                // console.log("[FIND NEWUSER]", newUser);
                 expect(res).to.have.status(201);
                 expect(res.body).to.be.an('object');
                 expect(res.body.title).to.equal("Lord of the rings");
@@ -167,7 +160,6 @@ describe('Auth endpoints', function () {
                     .delete(`/book/deletebook/${res.body.bookId}`)
                     .set('authorization', `Bearer ${token}`)
                     .then(res => {
-                        console.log("[DELETE RES]", res.body)
                         expect(res).to.have.status(201);
                         expect(res.body).to.be.an('object');
                         expect(res.body.title).to.equal("Lord of the rings");

@@ -11,16 +11,9 @@ const bookSchema = mongoose.Schema({
     bookId: Number,
     status: {
         type: String,
-        // enum: ['current', 'wishlist', 'completed'],
         default: 'wishlist'
     },
     bookCover: String,
-    rating: Number,
-    numOfRatings: Number,
-    active: {
-        type: Boolean,
-        default: false
-    },
     notes: [{
         currentPage: Number,
         body: String,
@@ -38,7 +31,6 @@ bookSchema.methods.serialize = function () {
         author: this.author || '',
         bookCover: this.bookCover || '',
         status: this.status || '',
-        active: this.active || '',
         notes: this.notes || ''
     };
 };
